@@ -64,7 +64,6 @@ else:
     		for socks in read_sockets:
         		if socks == server:
             			message = socks.recv(2048)
-	    			#f.decrypt(message)
             			print message
         		else:
             			message = sys.stdin.readline()
