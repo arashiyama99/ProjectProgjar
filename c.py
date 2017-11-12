@@ -5,6 +5,17 @@ import getpass
 import MySQLdb
 from cryptography.fernet import Fernet
 
+#menambah satu akun
+def daftar():
+	username = raw_input ("username akun : ")
+	password = getpass.getpass ("masukan password : ")
+	db = MySQLdb.connect("localhost", "root", "password","TESTDB")
+        cursor =db.cursor()
+
+        sql ="INSERT INTO users (id,username,password,status,grup,private) VALUES ('null',username,password,0,0,0)"
+        cursor.execute(sql)
+        db.commit()
+
 #menemukan pengguna yang online
 def cekstatus():
 	db = MySQLdb.connect("localhost", "root", "password","TESTDB")
@@ -55,10 +66,17 @@ if len(sys.argv) != 3:
 	exit()
 IP_address = str(sys.argv[1])
 Port = int(sys.argv[2])
+print "1. Login\n"
+print "2. Daftar\n"
+pilihan = raw_input ("Masukan pilihan : ")
 
-username = raw_input ("username : ")
-password = getpass.getpass("password : ")
-server.connect((IP_address, Port))
+if pilihan == "1":
+	username = raw_input ("username : ")
+	password = getpass.getpass("password : ")
+	server.connect((IP_address, Port))
+
+else pilihan == "2":
+	daftar();
 
 a = cekpwd(username,password)
 if a==0:
@@ -84,7 +102,7 @@ else:
 				else :
 	    				message2 = "<"+ username+"> " + message
             				server.send(message2)
-            				sys.stdout.write("<Kamu>")
+            				sys.stdout.write("<You>")
             				sys.stdout.write(message)
             				sys.stdout.flush()
 server.close()
