@@ -5,16 +5,20 @@ import getpass
 import MySQLdb
 from cryptography.fernet import Fernet
 
+#menemukan pengguna yang online
 def cekstatus():
 	db = MySQLdb.connect("localhost", "root", "password","TESTDB")
         cursor =db.cursor()
 
+        #mencari status pada db yang bernilai satu
         sql ="SELECT username FROM users WHERE status = 1"
         cursor.execute(sql)
 	cek = cursor.fetchall()
 	for row in cek:
+		#mencetak semua yang online
 		print row[0] + ' online'
 
+ #merubah status menjadi offline
 def logoutstatus(username, password):
 	db = MySQLdb.connect("localhost", "root", "password","TESTDB")
         cursor =db.cursor()
@@ -22,6 +26,7 @@ def logoutstatus(username, password):
         cursor.execute(sql)
 	db.commit()
 
+#merubah status menjadi online
 def loginstatus(username, password):
 	db = MySQLdb.connect("localhost", "root", "password","TESTDB")
         cursor =db.cursor()
@@ -29,7 +34,7 @@ def loginstatus(username, password):
         cursor.execute(sql)
 	db.commit()
 
-
+#cek ketersediaan akun
 def cekpwd(username, password):
 	db = MySQLdb.connect("localhost", "root", "password","TESTDB")
 	cursor =db.cursor()
@@ -39,6 +44,7 @@ def cekpwd(username, password):
 	cek = cursor.rowcount
 	
 	if cek ==1:
+		#jika ditemukan satu akun
 		return 1
 	else:
 		return 0
