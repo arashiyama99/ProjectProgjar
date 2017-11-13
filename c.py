@@ -13,13 +13,10 @@ password = 'null'
 def conn(sql):
 	#localhost,root,password,nama data base
 	db = MySQLdb.connect("localhost", "root", "password","TESTDB")
-    cursor =db.cursor()
-    cek = cursor.execute(sql)
-    if cek :
-    	db.commit()
-    else :
-    	print "query gagal dieksekusi"
-    db.close()
+	cursor = db.cursor()
+	cursor.execute(sql)
+	db.commit()
+	db.close()
 
 #masuk akun
 def login():
@@ -37,17 +34,16 @@ def daftar():
 	print "Daftar Akun Baru"
 	username = raw_input ("username akun : ")
 	password = getpass.getpass ("masukan password : ")
-	
-    sql ="INSERT INTO users (id,username,password,status,grup,private) VALUES ('null','%s','%s',0,0,0)"%(username, password)
-    conn(sql)
+	sql ="INSERT INTO users (id,username,password,status,grup,private) VALUES ('null','%s','%s',0,0,0)"%(username, password)
+	conn(sql)
 
 #menemukan pengguna yang online
 def cekstatus():
 	db = MySQLdb.connect("localhost", "root", "password","TESTDB")
-    cursor =db.cursor()
-    #mencari status pada db yang bernilai satu
-    sql ="SELECT username FROM users WHERE status = 1"
-    cursor.execute(sql)
+	cursor =db.cursor()
+	#mencari status pada db yang bernilai satu
+	sql ="SELECT username FROM users WHERE status = 1"
+	cursor.execute(sql)
 	cek = cursor.fetchall()
 	for row in cek:
 		#mencetak semua yang online
@@ -56,22 +52,21 @@ def cekstatus():
  #merubah status menjadi offline
 def logoutstatus():
 	sql="UPDATE users SET status = 0 WHERE username = '%s' AND password = '%s'" %(username, password)
-    conn(sql)
+	conn(sql)
 
 #merubah status menjadi online
 def loginstatus():
-    sql="UPDATE users SET status = 1 WHERE username = '%s' AND password = '%s'" %(username, password)
-    conn(sql)
+	sql="UPDATE users SET status = 1 WHERE username = '%s' AND password = '%s'" %(username, password)
+	conn(sql)
 
 #cek ketersediaan akun
 def cekpwd():
 	db = MySQLdb.connect("localhost", "root", "password","TESTDB")
 	cursor =db.cursor()
-
 	sql ="SELECT * FROM users WHERE username = '%s' AND password = '%s'"%(username, password)
 	cursor.execute(sql)
 	cek = cursor.rowcount
-	#jika ditemukan satu akun
+		#jika ditemukan satu akun
 	if cek == 1:
 		return 1
 	else:
@@ -121,9 +116,9 @@ while True:
 					elif message == 'private\n':
 						private()
 					else :
-	    				message2 = "<"+ username+"> " + message
-            				server.send(message2)
-            				sys.stdout.write("<You>")
-            				sys.stdout.write(message)
-            				sys.stdout.flush()
+						message2 = "<"+ username+"> " + message
+						server.send(message2)
+						sys.stdout.write("<You>")
+						sys.stdout.write(message)
+						sys.stdout.flush()
 server.close()
