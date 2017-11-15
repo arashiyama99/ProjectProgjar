@@ -28,7 +28,7 @@ def clientthread(conn, addr):
             try:     
                 message = conn.recv(2048)    
                 if message:
-		    
+		    print (addr)
                     print f.encrypt(message)
                     message_to_send =  message
                     broadcast(message_to_send,conn)
