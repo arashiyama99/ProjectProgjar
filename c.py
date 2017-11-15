@@ -6,8 +6,8 @@ import MySQLdb
 #from cryptography.fernet import Fernet
 
 #GLOBAL Variable
-username = 'null'
-password = 'null'
+#username = 'null'
+#password = 'null'
 #/
 
 def conn(sql):
@@ -19,14 +19,15 @@ def conn(sql):
 	db.close()
 
 #masuk akun
-def login():
-	print "Login Akun"
-	username = raw_input ("username akun : ")
-	password = getpass.getpass ("masukan password : ")
+def login(username, password):
+	#print "Login Akun"
+	#username = raw_input ("username akun : ")
+	#password = getpass.getpass ("masukan password : ")
 	cek = cekpwd(username, password)
 	if cek == 0:
 		print "gagal login"
 	else :
+		loginstatus(username, password)
 		return 1
 
 #menambah satu akun
@@ -50,12 +51,12 @@ def cekstatus():
 		print row[0] + ' online'
 
  #merubah status menjadi offline
-def logoutstatus():
+def logoutstatus(username, password):
 	sql="UPDATE users SET status = 0 WHERE username = '%s' AND password = '%s'" %(username, password)
 	conn(sql)
 
 #merubah status menjadi online
-def loginstatus():
+def loginstatus(username, password):
 	sql="UPDATE users SET status = 1 WHERE username = '%s' AND password = '%s'" %(username, password)
 	conn(sql)
 
@@ -95,9 +96,12 @@ while True:
 			daftar()
 
 	elif pilihan == "1":
-			cek = login()
+			print "silahkan login"
+			username = raw_input ("username akun : ")
+		        password = getpass.getpass ("masukan password : ")
+			cek = login(username, password)
 			if cek == 1:
-					loginstatus()
+					#loginstatus()
 					server.connect((IP_address, Port))
 					while True:
 				    		sockets_list = [sys.stdin, server]
@@ -111,7 +115,7 @@ while True:
 								if message == 'logout\n':
 									print "berhasil logout"
 									server.send(username + " offline")
-									logoutstatus()
+									logoutstatus(username, password)
 									exit()
 									#break #kembali ke menu pilihan
 								elif message == 'status\n':
