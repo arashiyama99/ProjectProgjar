@@ -3,11 +3,11 @@ import select
 import sys
 import getpass
 import MySQLdb
-#from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet
 
 #GLOBAL Variable
-#username = 'null'
-#password = 'null'
+username = 'null'
+password = 'null'
 #/
 
 def conn(sql):
@@ -19,15 +19,14 @@ def conn(sql):
 	db.close()
 
 #masuk akun
-def login(username, password):
-	#print "Login Akun"
-	#username = raw_input ("username akun : ")
-	#password = getpass.getpass ("masukan password : ")
-	cek = cekpwd(username, password)
+def login():
+	print "Login Akun"
+	username = raw_input ("username akun : ")
+	password = getpass.getpass ("masukan password : ")
+	cek = cekpwd()
 	if cek == 0:
 		print "gagal login"
 	else :
-		loginstatus(username, password)
 		return 1
 
 #menambah satu akun
@@ -35,7 +34,7 @@ def daftar():
 	print "Daftar Akun Baru"
 	username = raw_input ("username akun : ")
 	password = getpass.getpass ("masukan password : ")
-	sql ="INSERT INTO users (username,password,status) VALUES ('%s','%s',0)"%(username, password)
+	sql ="INSERT INTO users (id,username,password,status,grup,private) VALUES ('null','%s','%s',0,0,0)"%(username, password)
 	conn(sql)
 
 #menemukan pengguna yang online
@@ -51,17 +50,17 @@ def cekstatus():
 		print row[0] + ' online'
 
  #merubah status menjadi offline
-def logoutstatus(username, password):
+def logoutstatus():
 	sql="UPDATE users SET status = 0 WHERE username = '%s' AND password = '%s'" %(username, password)
 	conn(sql)
 
 #merubah status menjadi online
-def loginstatus(username, password):
+def loginstatus():
 	sql="UPDATE users SET status = 1 WHERE username = '%s' AND password = '%s'" %(username, password)
 	conn(sql)
 
 #cek ketersediaan akun
-def cekpwd(username, password):
+def cekpwd():
 	db = MySQLdb.connect("localhost", "root", "password","TESTDB")
 	cursor =db.cursor()
 	sql ="SELECT * FROM users WHERE username = '%s' AND password = '%s'"%(username, password)
@@ -73,11 +72,22 @@ def cekpwd(username, password):
 	else:
 		return 0
 
-def private(kode):
+def private(kode,message):
 	db = MySQLdb.connect("localhost", "root", "password","TESTDB")
 	cursor =db.cursor()
-	sql ="SELECT * FROM users WHERE private = '%s'"%(kode)
+	sql ="SELECT * FROM users WHERE username = '%s' AND password = '%s' AND group = '%s'"%(username, password,kode)
 	cursor.execute(sql)
+	cek = cursor.rowcount
+	if cek == 1 :
+		print message
+		return 1
+	else :
+		return 0
+
+def privatestatus(kode):
+	sql="UPDATE users SET group = '%s' WHERE username = '%s' AND password = '%s'" %(kode,username, password)
+	conn(sql)
+	
  
 #MAIN PROGRAM
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -88,50 +98,55 @@ IP_address = str(sys.argv[1])
 Port = int(sys.argv[2])
 
 while True:
-	print "\n1. Login"
-	print "2. Daftar"
-	print "3. Keluar"
+	print "1. Login\n"
+	print "2. Daftar\n"
 	pilihan = raw_input ("Masukan pilihan : ")
 	if pilihan == "2":
 		daftar()
-		
-	elif pilihan == "1":
-		print "silahkan login"
-		username = raw_input ("username akun : ")
-		password = getpass.getpass ("masukan password : ")
-		cek = login(username, password)
-		if cek == 1:
-			#loginstatus()
-			server.connect((IP_address, Port))
-			while True:
-				sockets_list = [sys.stdin, server]
-				read_sockets,write_socket, error_socket = select.select(sockets_list, [], [])
-				for socks in read_sockets:
-					if socks == server:
-						message = socks.recv(2048)
-						print message
+	cek = login()
+	server.connect((IP_address, Port))
+
+	if cek==1:
+		loginstatus()
+		while True:
+	    		sockets_list = [sys.stdin, server]
+	    		read_sockets,write_socket, error_socket = select.select(sockets_list, [], [])
+	    		for socks in read_sockets:
+	        		if socks == server:
+	            			message = socks.recv(2048)
+	            			kode,message = message.split("$")
+	            			cek = private(kode,message)
+	            			if cek == 0:
+	            				print message
 	        		else:
-						message = sys.stdin.readline()
+	            			message = sys.stdin.readline()
+
 					if message == 'logout\n':
 						print "berhasil logout"
 						server.send(username + " offline")
-						logoutstatus(username, password)
-						#exit()
+						logoutstatus()
 						break #kembali ke menu pilihan
 					elif message == 'status\n':
 						cekstatus()
 					elif message == 'private\n':
 						kode = raw_input("masukan kode private chat : ")
-						private(kode)
+						privatestatus(kode)
+						message = sys.stdin.readline()
+						while message != ('quit'):
+							message2 = kode+"$"+"<"+ username+"> " + message
+							server.send(message2)
+							sys.stdout.write("P~<You>")
+							sys.stdout.write(message2)
+							sys.stdout.flush()
+							message = sys.stdin.readline()
+						kode = 0
+						privatestatus(kode)
+						# private(kode)
 					else :
 						message2 = "<"+ username+"> " + message
 						server.send(message2)
 						sys.stdout.write("<You>")
 						sys.stdout.write(message)
 						sys.stdout.flush()
-	elif pilihan =="3":
-		print "terimakasih , anda telah keluar sistem"
-		exit()
-	else:
-		print "pilihan salah, silahkan pilih lagi "
 server.close()
+
