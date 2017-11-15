@@ -3,7 +3,7 @@ import select
 import sys
 import getpass
 import MySQLdb
-from cryptography.fernet import Fernet
+#from cryptography.fernet import Fernet
 
 #GLOBAL Variable
 username = 'null'
@@ -72,12 +72,12 @@ def cekpwd():
 	else:
 		return 0
 
-def private():
+def private(kode):
 	db = MySQLdb.connect("localhost", "root", "password","TESTDB")
 	cursor =db.cursor()
-	sql ="SELECT private FROM users WHERE username = '%s' AND password = '%s'"%(username, password)
+	sql ="SELECT * FROM users WHERE private = '%s'"%(kode)
 	cursor.execute(sql)
-
+ 
 #MAIN PROGRAM
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 if len(sys.argv) != 3:
@@ -114,7 +114,8 @@ while True:
 					elif message == 'status\n':
 						cekstatus()
 					elif message == 'private\n':
-						private()
+						kode = raw_input("masukan kode private chat : ")
+						private(kode)
 					else :
 						message2 = "<"+ username+"> " + message
 						server.send(message2)
