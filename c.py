@@ -23,7 +23,7 @@ def login():
 	print "Login Akun"
 	username = raw_input ("username akun : ")
 	password = getpass.getpass ("masukan password : ")
-	cek = cekpwd()
+	cek = cekpwd(username, password)
 	if cek == 0:
 		print "gagal login"
 	else :
@@ -34,7 +34,7 @@ def daftar():
 	print "Daftar Akun Baru"
 	username = raw_input ("username akun : ")
 	password = getpass.getpass ("masukan password : ")
-	sql ="INSERT INTO users (id,username,password,status,grup,private) VALUES ('null','%s','%s',0,0,0)"%(username, password)
+	sql ="INSERT INTO users (username,password,status) VALUES ('%s','%s',0)"%(username, password)
 	conn(sql)
 
 #menemukan pengguna yang online
@@ -60,7 +60,7 @@ def loginstatus():
 	conn(sql)
 
 #cek ketersediaan akun
-def cekpwd():
+def cekpwd(username, password):
 	db = MySQLdb.connect("localhost", "root", "password","TESTDB")
 	cursor =db.cursor()
 	sql ="SELECT * FROM users WHERE username = '%s' AND password = '%s'"%(username, password)
@@ -87,39 +87,47 @@ IP_address = str(sys.argv[1])
 Port = int(sys.argv[2])
 
 while True:
-	print "1. Login\n"
-	print "2. Daftar\n"
+	print "\n1. Login"
+	print "2. Daftar"
+	print "3. Keluar"
 	pilihan = raw_input ("Masukan pilihan : ")
 	if pilihan == "2":
-		daftar()
-	cek = login()
-	server.connect((IP_address, Port))
+			daftar()
 
-	if cek==1:
-		loginstatus()
-		while True:
-	    		sockets_list = [sys.stdin, server]
-	    		read_sockets,write_socket, error_socket = select.select(sockets_list, [], [])
-	    		for socks in read_sockets:
-	        		if socks == server:
-	            			message = socks.recv(2048)
-	            			print message
-	        		else:
-	            			message = sys.stdin.readline()
-					if message == 'logout\n':
-						print "berhasil logout"
-						server.send(username + " offline")
-						logoutstatus()
-						break #kembali ke menu pilihan
-					elif message == 'status\n':
-						cekstatus()
-					elif message == 'private\n':
-						kode = raw_input("masukan kode private chat : ")
-						private(kode)
-					else :
-						message2 = "<"+ username+"> " + message
-						server.send(message2)
-						sys.stdout.write("<You>")
-						sys.stdout.write(message)
-						sys.stdout.flush()
+	elif pilihan == "1":
+			cek = login()
+			if cek == 1:
+					loginstatus()
+					server.connect((IP_address, Port))
+					while True:
+				    		sockets_list = [sys.stdin, server]
+				    		read_sockets,write_socket, error_socket = select.select(sockets_list, [], [])
+				    		for socks in read_sockets:
+				        		if socks == server:
+				            			message = socks.recv(2048)
+				            			print message
+				        		else:
+				            			message = sys.stdin.readline()
+								if message == 'logout\n':
+									print "berhasil logout"
+									server.send(username + " offline")
+									logoutstatus()
+									exit()
+									#break #kembali ke menu pilihan
+								elif message == 'status\n':
+									cekstatus()
+								elif message == 'private\n':
+									kode = raw_input("masukan kode private chat : ")
+									private(kode)
+								else :
+									message2 = "<"+ username+"> " + message
+									server.send(message2)
+									sys.stdout.write("<You>")
+									sys.stdout.write(message)
+									sys.stdout.flush()
+	elif pilihan =="3":
+		print "terimakasih , anda telah keluar sistem"
+		exit()
+	else:
+		print "pilihan salah, silahkan pilih lagi "
 server.close()
