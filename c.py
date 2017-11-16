@@ -25,7 +25,7 @@ def login(username, password):
 	#password = getpass.getpass ("masukan password : ")
 	cek = cekpwd(username, password)
 	if cek == 0:
-		print "gagal login"
+		return 0
 	else :
 		loginstatus(username, password)
 		return 1
@@ -36,7 +36,9 @@ def daftar():
 	username = raw_input ("username akun : ")
 	password = getpass.getpass ("masukan password : ")
 	sql ="INSERT INTO users (username,password,status) VALUES ('%s','%s',0)"%(username, password)
+	sql2 = "UPDATE users set pin_user = FLOOR( 1 + RAND( ) *100000 ) where username = '%s'"%(username)
 	conn(sql)
+	conn(sql2)
 
 #menemukan pengguna yang online
 def cekstatus():
@@ -49,6 +51,18 @@ def cekstatus():
 	for row in cek:
 		#mencetak semua yang online
 		print row[0] + ' online'
+
+def cekprofile(username):
+	db = MySQLdb.connect("localhost", "root", "password","TESTDB")
+	cursor =db.cursor()
+	#mencari status pada db yang bernilai satu
+	sql ="SELECT username, pin_user FROM users WHERE username = '%s' "%(username)
+	cursor.execute(sql)
+	cek = cursor.fetchall()
+	for row in cek:
+		#mencetak semua yang online
+		print 'username : ', row[0]
+		print 'user pin : ', row[1]
 
  #merubah status menjadi offline
 def logoutstatus(username, password):
@@ -76,7 +90,7 @@ def cekpwd(username, password):
 def private(kode):
 	db = MySQLdb.connect("localhost", "root", "password","TESTDB")
 	cursor =db.cursor()
-	sql ="SELECT * FROM users WHERE private = '%s'"%(kode)
+	sql ="SELECT * FROM users WHERE pin_user = '%s'"%(kode)
 	cursor.execute(sql)
  
 #MAIN PROGRAM
@@ -86,6 +100,8 @@ if len(sys.argv) != 3:
 	exit()
 IP_address = str(sys.argv[1])
 Port = int(sys.argv[2])
+
+
 
 while True:
 	print "\n1. Login"
@@ -116,19 +132,23 @@ while True:
 									print "berhasil logout"
 									server.send(username + " offline")
 									logoutstatus(username, password)
-									exit()
+									break 
 									#break #kembali ke menu pilihan
 								elif message == 'status\n':
 									cekstatus()
 								elif message == 'private\n':
-									kode = raw_input("masukan kode private chat : ")
+									kode = raw_input("masukan kode pin user : ")
 									private(kode)
+								elif message == 'profile\n':
+									cekprofile(username)
 								else :
 									message2 = "<"+ username+"> " + message
 									server.send(message2)
 									sys.stdout.write("<You>")
 									sys.stdout.write(message)
 									sys.stdout.flush()
+			else:
+				print "gagal login"
 	elif pilihan =="3":
 		print "terimakasih , anda telah keluar sistem"
 		exit()
