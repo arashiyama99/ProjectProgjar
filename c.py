@@ -109,9 +109,10 @@ while True:
 	print "3. Keluar"
 	pilihan = raw_input ("Masukan pilihan : ")
 	if pilihan == "2":
-			daftar()
-
+		daftar()
+		
 	elif pilihan == "1":
+<<<<<<< HEAD
 			print "silahkan login"
 			username = raw_input ("username akun : ")
 		        password = getpass.getpass ("masukan password : ")
@@ -149,6 +150,41 @@ while True:
 									sys.stdout.flush()
 			else:
 				print "gagal login"
+=======
+		print "silahkan login"
+		username = raw_input ("username akun : ")
+		password = getpass.getpass ("masukan password : ")
+		cek = login(username, password)
+		if cek == 1:
+			#loginstatus()
+			server.connect((IP_address, Port))
+			while True:
+				sockets_list = [sys.stdin, server]
+				read_sockets,write_socket, error_socket = select.select(sockets_list, [], [])
+				for socks in read_sockets:
+					if socks == server:
+						message = socks.recv(2048)
+						print message
+	        		else:
+						message = sys.stdin.readline()
+					if message == 'logout\n':
+						print "berhasil logout"
+						server.send(username + " offline")
+						logoutstatus(username, password)
+						#exit()
+						break #kembali ke menu pilihan
+					elif message == 'status\n':
+						cekstatus()
+					elif message == 'private\n':
+						kode = raw_input("masukan kode private chat : ")
+						private(kode)
+					else :
+						message2 = "<"+ username+"> " + message
+						server.send(message2)
+						sys.stdout.write("<You>")
+						sys.stdout.write(message)
+						sys.stdout.flush()
+>>>>>>> 4aa6c346d6a29196c02ba2bb2915d8c51271f2c3
 	elif pilihan =="3":
 		print "terimakasih , anda telah keluar sistem"
 		exit()
