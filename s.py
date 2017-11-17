@@ -2,11 +2,22 @@ import socket
 import select
 from thread import *
 import sys
-#from cryptography.fernet import Fernet
+import MySQLdb
+from cryptography.fernet import Fernet
 
-# key = Fernet.generate_key()
-# f = Fernet(key)
+key = Fernet.generate_key()
+f = Fernet(key)
 
+def cekstatus():
+    db = MySQLdb.connect("localhost", "root", "password","TESTDB")
+    cursor =db.cursor()
+    #mencari status pada db yang bernilai satu
+    sql ="SELECT username FROM users WHERE status = 1"
+    cursor.execute(sql)
+    cek = cursor.fetchall()
+    for row in cek:
+        #mencetak semua yang online
+        print row[0] + ' online'
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -22,19 +33,22 @@ server.listen(100)
 list_of_clients=[]
 
 def clientthread(conn, addr):
-    conn.send("Welcome to this chatroom!")
+    conn.send("Welcome$ this!")
     
     while True:
             try:     
                 message = conn.recv(2048)    
                 if message:
-                    #print f.encrypt(message)
+                    nama, pesan = message.split(">")
+                    #print message
+                    #print nama + ">"
+                    print nama + "> " + f.encrypt(pesan)
                     message_to_send =  message
                     broadcast(message_to_send,conn)
                     
                 else:
-                    print "hahahah"
-                    # remove(conn)
+                    #print "hahahah"
+                    remove(conn)
             except:
                 continue
 
@@ -47,6 +61,7 @@ def broadcast(message,connection):
                 clients.close()
                 remove(clients)
 
+
 def remove(connection):
     if connection in list_of_clients:
         list_of_clients.remove(connection)
@@ -55,6 +70,7 @@ while True:
     conn, addr = server.accept()
     list_of_clients.append(conn)
     print addr[0]  + " connected"
+    cekstatus()
     start_new_thread(clientthread,(conn,addr))
 
 conn.close()

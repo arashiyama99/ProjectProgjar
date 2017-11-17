@@ -87,11 +87,34 @@ def cekpwd(username, password):
 	else:
 		return 0
 
-def private(kode):
+def private(kode, username):
 	db = MySQLdb.connect("localhost", "root", "password","TESTDB")
 	cursor =db.cursor()
-	sql ="SELECT * FROM users WHERE pin_user = '%s'"%(kode)
+	sql ="SELECT pin_user FROM users WHERE username='%s'"%(username)
 	cursor.execute(sql)
+	cek = cursor.fetchall()
+	for row in cek:
+		finalpin = row[0]
+
+	if str(finalpin) == str(kode) :
+		return 1
+	else :
+		return 0
+
+def privatestatus(kode,username,password):
+	sql="UPDATE users SET private = '%s' WHERE username = '%s' AND password = '%s'" %(kode,username, password)
+	conn(sql)
+	chatprivate(kode)
+ 
+def chatprivate(kode):
+	message = sys.stdin.readline()
+	while message != ('quit'):
+		message = sys.stdin.readline()
+		message2 = kode+"$"+"<"+ username+"> " + message
+		server.send(message2)
+		sys.stdout.write("P~<You>")
+		sys.stdout.write(message)
+		sys.stdout.flush()
  
 #MAIN PROGRAM
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -102,6 +125,8 @@ IP_address = str(sys.argv[1])
 Port = int(sys.argv[2])
 
 
+flag1= False
+flag2= False
 
 while True:
 	print "\n1. Login"
@@ -112,45 +137,6 @@ while True:
 		daftar()
 		
 	elif pilihan == "1":
-<<<<<<< HEAD
-			print "silahkan login"
-			username = raw_input ("username akun : ")
-		        password = getpass.getpass ("masukan password : ")
-			cek = login(username, password)
-			if cek == 1:
-					#loginstatus()
-					server.connect((IP_address, Port))
-					while True:
-				    		sockets_list = [sys.stdin, server]
-				    		read_sockets,write_socket, error_socket = select.select(sockets_list, [], [])
-				    		for socks in read_sockets:
-				        		if socks == server:
-				            			message = socks.recv(2048)
-				            			print message
-				        		else:
-				            			message = sys.stdin.readline()
-								if message == 'logout\n':
-									print "berhasil logout"
-									server.send(username + " offline")
-									logoutstatus(username, password)
-									break 
-									#break #kembali ke menu pilihan
-								elif message == 'status\n':
-									cekstatus()
-								elif message == 'private\n':
-									kode = raw_input("masukan kode pin user : ")
-									private(kode)
-								elif message == 'profile\n':
-									cekprofile(username)
-								else :
-									message2 = "<"+ username+"> " + message
-									server.send(message2)
-									sys.stdout.write("<You>")
-									sys.stdout.write(message)
-									sys.stdout.flush()
-			else:
-				print "gagal login"
-=======
 		print "silahkan login"
 		username = raw_input ("username akun : ")
 		password = getpass.getpass ("masukan password : ")
@@ -164,27 +150,44 @@ while True:
 				for socks in read_sockets:
 					if socks == server:
 						message = socks.recv(2048)
-						print message
-	        		else:
+						test = message
+						priv, sisa = test.split("$")
+						if priv == "private":
+							kode, test2 = sisa.split(">")
+							#print kode, test2
+							cek = private(kode, username)
+							if cek == 1:
+								print test2
+							else :
+								break
+						else :
+							print message
+					else:
 						message = sys.stdin.readline()
-					if message == 'logout\n':
-						print "berhasil logout"
-						server.send(username + " offline")
-						logoutstatus(username, password)
-						#exit()
-						break #kembali ke menu pilihan
-					elif message == 'status\n':
-						cekstatus()
-					elif message == 'private\n':
-						kode = raw_input("masukan kode private chat : ")
-						private(kode)
-					else :
-						message2 = "<"+ username+"> " + message
-						server.send(message2)
-						sys.stdout.write("<You>")
-						sys.stdout.write(message)
-						sys.stdout.flush()
->>>>>>> 4aa6c346d6a29196c02ba2bb2915d8c51271f2c3
+						if message == 'logout\n':
+							print "berhasil logout"
+							server.send(username + " offline")
+							logoutstatus(username, password)
+							exit()
+
+
+							#break #kembali ke menu pilihan
+						elif message == 'status\n':
+							cekstatus()
+						elif message == 'profile\n':
+							cekprofile(username)
+						elif message == 'private\n':
+							kode = raw_input("masukan kode private chat : ")			
+							message = raw_input("masukan pesan : ")
+							messagefinal = "private$" + kode +">"+ message
+							server.send(messagefinal)
+							#private(kode, message)
+						else :
+							message2 = "<"+ username+">$ " + message
+							server.send(message2)
+							sys.stdout.write("<You>")
+							sys.stdout.write(message)
+							sys.stdout.flush()
 	elif pilihan =="3":
 		print "terimakasih , anda telah keluar sistem"
 		exit()
